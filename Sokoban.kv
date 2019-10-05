@@ -1,8 +1,32 @@
 <SokobanLayout>
-
-	BoxLayout:
-		Button:
-			text: "this is a button."
-			on_press: root.tempFunc()
-		Image:
-			texture: root.image.texture
+  FloatLayout:
+    BoxLayout:
+      pos: 0, 150
+      width: 800
+      height: 300
+      size_hint: None, None
+      Image:
+        texture: root.image.texture
+    Button:
+      id: run_toggler
+      text: "Start"
+      on_press: root.ToggleRun()
+      size: 200, 150
+      size_hint: None, None
+      pos: 300, 0
+    Button:
+      id: run_analysis
+      text: "Run an Average"
+      size: 150,150
+      size_hint: None, None
+      pos: 600, 0
+    GridLayout:
+      id: load_level
+      text: "Load"
+    Label:
+      id: timer
+      text: "00.00.00"
+      size: 200, 75
+      size_hint: None, None
+      pos: 0,0
+      font_size: 50

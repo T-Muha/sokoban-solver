@@ -42,13 +42,17 @@ class Board():
 
         self.prevState = [x[:] for x in self.levelArray]
 
+        ######Backup Values######
+        self.initLevelArray = [x[:] for x in self.levelArray]
+        self.initPPos = self.pPos[:]
+
         ######Generate Initial Board#######
         #def draw_switch(id):
         #    switcher = {0: wall, 1: floor, 2: bFloor, 3: goal, 4: pFloor, 5: bGoal, 6: pGoal}
         #    return switcher.get(id)
         for i in range(self.width):
             for j in range(self.height):
-                self.drawnLevel.paste(self.Draw_Switch(self.levelArray[i][j]),(i*64,j*64))
+                self.drawnLevel.paste(self.Draw_Switch(self.levelArray[i][j]),(i*64,j*-64+self.height*64-64))
 
     #converts levelArray data into correct image
     def Draw_Switch(self, id):
@@ -57,23 +61,17 @@ class Board():
 
     #converts directional input into relevant values
     def Direction_Switch(self, id):
-        switcher = {"Up": [0,0,1,-1],"Down": [0,0,1,1],"Left": [1,-1,0,0],"Right": [1,1,0,0]}
+        switcher = {"Up": [0,0,1,1],"Down": [0,0,1,-1],"Left": [1,-1,0,0],"Right": [1,1,0,0]}
         return switcher.get(id)
 
-    #updates image based on which positions changed
-    def DetectDifference(self):
-        for i in range(len(self.levelArray)):
-            for j in range(len(self.levelArray)):
+    #updates image based on which positions changed and checks solve conditions
+    def EndMove(self):
+        for i in range(self.width):
+            for j in range(self.height):
                 if not (self.levelArray[i][j] == self.prevState[i][j]):
-                        self.drawnLevel.paste(self.Draw_Switch(self.levelArray[i][j]),(i*64,j*64))
+                        self.drawnLevel.paste(self.Draw_Switch(self.levelArray[i][j]),(i*64,j*-64+self.height*64-64))
         self.prevState = [x[:] for x in self.levelArray]
-        self.CheckSolve()
-
-    #checks to see if solved
-    def CheckSolve(self):
         for goal in self.goals:
-            print(goal)
-            print(self.levelArray[goal[0]][goal[1]])
             if not self.levelArray[goal[0]][goal[1]] == 5:
                 return 0
         print("solved")
@@ -81,15 +79,35 @@ class Board():
 
     #moves player in given direction
     def Move(self, direction):
+        if direction == "Reset":
+            self.Reset()
+            return
+        elif direction == "Pass":
+            return self.EndMove()
         [hor,hSign,ver,vSign] = self.Direction_Switch(direction)
         targetOnePos = [self.pPos[0]+(hor*hSign),self.pPos[1]+(ver*vSign)]
-        targetOneVal = self.levelArray[targetOnePos[0]][targetOnePos[1]]
         targetTwoPos = [self.pPos[0]+2*(hor*hSign),self.pPos[1]+2*(ver*vSign)]
-        targetTwoVal = self.levelArray[targetTwoPos[0]][targetTwoPos[1]]
-        if targetOneVal == 0 or (targetOneVal == 2 and (targetTwoVal == 0 or targetTwoVal == 2)):
+
+        ######Verifies validity of move and prevents invalid indices
+        checkFar = True
+        if targetOnePos[0] < 0 or targetOnePos[0] >= self.width or targetOnePos[1] < 0 or targetOnePos[1] >= self.height:
             print("Invalid Move!!")
-        elif targetOnePos[0] < 0 or targetOnePos[1] >= self.width or (targetOneVal == 2 and (targetTwoPos[0] < 0 or targetTwoPos[1] >= self.height)):
+            return
+        if targetTwoPos[0] < 0 or targetTwoPos[0] >= self.width or targetTwoPos[1] < 0 or targetTwoPos[1] >= self.height:
+            checkFar = False
+        targetOneVal = self.levelArray[targetOnePos[0]][targetOnePos[1]]
+        if checkFar:
+            targetTwoVal = self.levelArray[targetTwoPos[0]][targetTwoPos[1]]
+            if (targetOneVal == 2 and (targetTwoVal == 0 or targetTwoVal == 2)):
+                print("Invalid Move!!")
+                return
+            if (targetOneVal == 2 and (targetTwoPos[0] < 0 or targetTwoPos[0] >= self.width)) or (targetOneVal == 2 and (targetTwoPos[1] < 0 or targetTwoPos[1] >= self.height)):
+                print("Invalid Move!!")
+                return
+        if targetOneVal == 0:
             print("Invalid Move!!")
+            return
+        ########Makes move
         else:
             if targetOneVal == 2:
                 self.levelArray[targetOnePos[0]][targetOnePos[1]] = 4
@@ -99,6 +117,12 @@ class Board():
                     self.levelArray[targetTwoPos[0]][targetTwoPos[1]] = 2
             elif targetOneVal == 3:
                 self.levelArray[targetOnePos[0]][targetOnePos[1]] = 6
+            elif targetOneVal == 5:
+                self.levelArray[targetOnePos[0]][targetOnePos[1]] = 6
+                if targetTwoVal == 3:
+                    self.levelArray[targetTwoPos[0]][targetTwoPos[1]] = 5
+                else:
+                    self.levelArray[targetTwoPos[0]][targetTwoPos[1]] = 2
             else:
                 self.levelArray[targetOnePos[0]][targetOnePos[1]] = 4
             if self.levelArray[self.pPos[0]][self.pPos[1]] == 6:
@@ -107,7 +131,8 @@ class Board():
                 self.levelArray[self.pPos[0]][self.pPos[1]] = 1
             self.pPos[0] += hor * hSign
             self.pPos[1] += ver * vSign
-            self.DetectDifference()
+            return self.EndMove()
+
 
     def GetData(self):
         data = {
@@ -116,5 +141,11 @@ class Board():
             "pPos": self.pPos,
             "goals": self.goals,
             "width": self.width,
-            "height": self.height}
+            "height": self.height
+        }
         return data
+
+    def Reset(self):
+        self.levelArray = [x[:] for x in self.initLevelArray]
+        self.pPos = self.initPPos[:]
+        self.EndMove()
