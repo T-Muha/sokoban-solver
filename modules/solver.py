@@ -13,12 +13,16 @@ class Solver():
         self.availGoal = []
         self.boxMoves = []
         self.prevMove = []
+        self.prunedBoxMoves = []
 
-        self.root = node.Node('root')
+        self.root = node.Node('root', None)
         self.currentNode = self.root
+        self.allNodes = [self.root]
 
-        self.decisionIndices = []
-        self.indices = []
+        self.depth = 0
+        self.maxDepth = 3
+        self.numResetAtDepth = 0
+        self.maxResetAtDepth = 5
 
     def Decide(self):
         self.open = []
@@ -29,6 +33,15 @@ class Solver():
             self.prevMove = []
             return goalPath
         else:
+            #self.depth += 1
+            #if self.depth == self.maxDepth:
+            #    self.depth = 0
+            #    if self.numResetAtDepth == self.maxResetAtDepth:
+            #        self.numResetAtDepth = 0
+            #        self.maxResetAtDepth *= 2
+            #        self.maxDepth += 1
+            #    print("YUH")
+            #    return "Reset"
             move = self.MakeIntermediateMove()
         return move
 
@@ -47,62 +60,83 @@ class Solver():
         self.UpdateData(newData)
         self.root = node.Node('root')
 
+    def TempCheck(self, move):
+        ##check to see if box's only option is a dead space surrounded by walls - Reset condition
+        tempX = move[1][0]
+        tempY = move[1][1]
+        tempDir = self.PositionToDirection(move[0], move[1])
+        touchingOne = self.levelArray[tempX+tempDir[0]][tempY+tempDir[1]]
+        touchingTwo = self.levelArray[tempX+abs(tempDir[0])-1][tempY+abs(tempDir[1])-1]
+        touchingThree = self.levelArray[tempX-(abs(tempDir[0])-1)][tempY-(abs(tempDir[1])-1)]
+        if touchingOne == 0 and touchingTwo == 0 and touchingThree == 0:
+            self.prunedBoxMoves = []
+
     def MakeIntermediateMove(self):
         if not self.currentNode.KnowsChildren():      #see if node has been visited yet
-            ##clear out dead-end moves
-            if len(self.prevMove):
-                for move in self.boxMoves:
-                    if move == [self.prevMove[1], self.prevMove[0]]:
-                        self.boxMoves.remove(move)
+            self.prunedBoxMoves = [x[:] for x in self.boxMoves[:]]
             for move in self.boxMoves:
-                if self.CheckDeadEnd(move) or self.IsBlockLocked(move[1], move[0]):
-                    self.boxMoves.remove(move)
-            ##add moves to the graph
-            self.currentNode.AddChildren(self.boxMoves)
-
+                self.TempCheck(move)
+                if len(self.prunedBoxMoves) and (self.IsBlockLocked(move[1], move[0]) or self.IsRingBlocked(move[1], move[0])):
+                    self.prunedBoxMoves.remove(move)
+            ##add pruned moves to the graph
+            self.currentNode.AddChildren([x[:] for x in self.prunedBoxMoves[:]])
+            children = self.currentNode.GetChildren()
+            for child in children:
+                self.allNodes.append(child)
         self.currentNode, index = self.currentNode.GetNextNode()
-        self.indices.append(index)
         if not self.currentNode:        #if there are no possible moves
-            self.ResetChecker()
             return "Reset"
         move = self.currentNode.GetMove()
         self.prevMove = move
         playerPath = self.ConstructPlayerPath(move)
         return self.MakeMoveSet(playerPath[:])
-        
+    
+    #prunes dead end node paths
+    def CompressNodes(self):
+        if len(self.allNodes):
+            for i in range(len(self.allNodes)-1,-1,-1):
+                self.allNodes[i].Compress()
 
-        
-        #isDeadEnd = True
-        #deadEndMoves = []
-        #moveDeadEnd = True
-        #isBlocked = True
-        #while isDeadEnd or isBlocked:
-            
-        #    moveIndex = random.randint(0,len(self.boxMoves)-1)
-        #    boxPath = self.boxMoves[moveIndex]
-        #    isDeadEnd = self.CheckDeadEnd(boxPath)
-        #    isBlocked = self.IsBlockLocked(boxPath[1], boxPath[0])
-        #    if isDeadEnd or isBlocked:
-        #        self.boxMoves.remove(boxPath)
-        #self.prevMove = boxPath
-        #playerPath = self.ConstructPlayerPath(boxPath)
-        ##print("Found random move")
-        #return self.MakeMoveSet(playerPath[:]), moveIndex
+    #Checks to see if tile is part of a locked ring of 3x3
+    def IsRingBlocked(self, pos, prevPos):
 
+        groupOneLeft = [pos, [pos[0], pos[1]-1], [pos[0], pos[1]-2]]
+        groupOneRight = [[pos[0]+2, pos[1]], [pos[0]+2, pos[1]-1], [pos[0]+2, pos[1]-2]]
+        groupOneTop = [pos, [pos[0]+1, pos[1]], [pos[0]+2, pos[1]]]
+        groupOneBottom = [pos, [pos[0]+1, pos[1]-2], [pos[0]+2, pos[1]-2]]
+        groupBottomRight = [groupOneLeft, groupOneRight, groupOneTop, groupOneBottom]
 
+        groupTwoRight = [pos, [pos[0], pos[1]-1], [pos[0], pos[1]-2]]
+        groupTwoLeft = [[pos[0]-2, pos[1]], [pos[0]-2, pos[1]-1], [pos[0]-2, pos[1]-2]]
+        groupTwoTop = [pos, [pos[0]-1, pos[1]], [pos[0]-2, pos[1]]]
+        groupTwoBottom = [pos, [pos[0]-1, pos[1]-2], [pos[0]-2, pos[1]-2]]
+        groupBottomLeft = [groupTwoLeft, groupTwoRight, groupTwoTop, groupTwoBottom]
 
-    #currently only checks for corner dead ends
-    def CheckDeadEnd(self, move):
-        deadValues = [0]
-        pos = move[0]
-        target = move[1]
-        prevDir = self.PositionToDirection(move[0],move[1])
-        targetExtended = self.levelArray[target[0]+prevDir[0]][target[1]+prevDir[1]]
-        extCatOne = self.levelArray[target[0]+prevDir[1]][target[1]+prevDir[0]]
-        extCatTwo = self.levelArray[target[0]-prevDir[1]][target[1]-prevDir[0]]
-        if targetExtended in deadValues:
-            if extCatOne in deadValues or extCatTwo in deadValues:
+        groupThreeLeft = [pos, [pos[0], pos[1]+1], [pos[0], pos[1]+2]]
+        groupThreeRight = [[pos[0]+2, pos[1]], [pos[0]+2, pos[1]+1], [pos[0]+2, pos[1]+2]]
+        groupThreeBottom = [pos, [pos[0]+1, pos[1]], [pos[0]+2, pos[1]]]
+        groupThreeTop = [pos, [pos[0]+1, pos[1]+2], [pos[0]+2, pos[1]+2]]
+        groupTopRight = [groupThreeLeft, groupThreeRight, groupThreeTop, groupThreeBottom]
+
+        groupFourLeft = [[pos[0]-2, pos[1]], [pos[0]-2, pos[1]+1], [pos[0], pos[1]+2]]
+        groupFourRight = [pos, [pos[0], pos[1]+1], [pos[0], pos[1]+2]]
+        groupFourBottom = [pos, [pos[0]-1, pos[1]], [pos[0]-2, pos[1]]]
+        groupFourTop = [pos, [pos[0]-1, pos[1]+2], [pos[0]-2, pos[1]+2]]
+        groupTopLeft = [groupFourLeft, groupFourRight, groupFourTop, groupFourBottom]
+
+        groups = [groupTopLeft, groupTopRight, groupBottomLeft, groupBottomRight]
+        tempLevelArray = [x[:] for x in self.levelArray[:]]
+        tempLevelArray[pos[0]][pos[1]] = 2
+        tempLevelArray[prevPos[0]][prevPos[1]] = 1
+        blockCounter = 0
+        for group in groups:
+            for side in group:
+                for pos in side:
+                    if self.CheckRange(pos) and (tempLevelArray[pos[0]][pos[1]] == 2 or tempLevelArray[pos[0]][pos[1]] == 0):
+                        blockCounter += 1
+            if blockCounter == 8:
                 return True
+            blockCounter = 0
         return False
 
     #sees if a tile is part of a locked group of four
@@ -113,7 +147,7 @@ class Solver():
         groupFour = [pos, [pos[0]-1,pos[1]], [pos[0]-1,pos[1]+1], [pos[0],pos[1]+1]]
         groups = [groupOne, groupTwo, groupThree, groupFour]
         blockCounter = 0
-        tempLevelArray = [x[:] for x in self.levelArray]
+        tempLevelArray = [x[:] for x in self.levelArray[:]]
         tempLevelArray[pos[0]][pos[1]] = 2
         tempLevelArray[prevPos[0]][prevPos[1]] = 1
         for group in groups:
@@ -205,18 +239,7 @@ class Solver():
                     self.boxMoves.append([[pos[0]+direction[0],pos[1]+direction[1]],[pos[0]+2*direction[0],pos[1]+2*direction[1]]])
         return 0
 
-    #Verifies position is within bounds
-    def CheckRange(self, pos):
-        if pos[0] < 0 or pos[1] < 0 or pos[0] >= self.width or pos[1] >= self.height:
-            return 0
-        else:
-            return 1
-
-    #finds absolute distance between two points
-    def Distance(self, posOne, posTwo):
-        return math.sqrt((posOne[0] - posTwo[0])**2 + (posOne[1] - posTwo[1])**2)
-
-    #A* algorithm for finding a path
+    #A* algorithm for finding a path. Modifier allows you to use level state different than the current one
     def FindPath(self, posOne, posTwo, modifiers=None):
         if modifiers:
             modifiedLevel = [x[:] for x in self.levelArray]
@@ -257,6 +280,7 @@ class Solver():
                             if not adjacent in openSet:
                                 openSet.append(adjacent)
     
+    #Converts a set of positions to the moves made
     def MakeMoveSet(self, positions):
         if not positions:
             return "Pass"
@@ -267,6 +291,7 @@ class Solver():
             prevPos = pos[:]
         return moveSet
 
+   #Converts two positions to the move made
     def PositionToMove(self, prevPos, nextPos):
         if prevPos[0] == nextPos[0]:
             if prevPos[1] < nextPos[1]:
@@ -279,6 +304,7 @@ class Solver():
             else:
                 return "Left"
 
+    #converts two positions to the direction taken to make the move
     def PositionToDirection(self, prevPos, nextPos):
         if prevPos[0] == nextPos[0]:
             if prevPos[1] < nextPos[1]:
@@ -291,9 +317,19 @@ class Solver():
             else:
                 return [-1,0]
 
-    def ResetChecker(self):
-        for indices in self.decisionIndices:
-            if self.indices == indices:
-                print("SONOFABITCH")
-        self.decisionIndices.append([x[:] for x in self.indices])
-        return
+    #Checks to see if space is available to player
+    def IsAccessible(self, position):
+        if position in self.open:
+            return True
+        return False
+
+    #Verifies position is within bounds
+    def CheckRange(self, pos):
+        if pos[0] < 0 or pos[1] < 0 or pos[0] >= self.width or pos[1] >= self.height:
+            return 0
+        else:
+            return 1
+
+    #finds absolute distance between two points
+    def Distance(self, posOne, posTwo):
+        return math.sqrt((posOne[0] - posTwo[0])**2 + (posOne[1] - posTwo[1])**2)

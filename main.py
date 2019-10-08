@@ -94,6 +94,15 @@ class SokobanLayout(BoxLayout):
             self.stopWatch.Press()
             self.ToggleRun()
             Clock.schedule_once(self.UpdateBoardImage, 1/100.0)
+
+
+        for i in range(len(self.gameBoard.levelArray)):
+            for j in range(len(self.gameBoard.levelArray[i])):
+                if self.gameBoard.levelArray[i][j] != self.SolverAI.levelArray[i][j]:
+                    print("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999")
+                    print("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999")
+
+
         self.waiting = False
 
     def UpdateBoardImage(self, dt=0):
