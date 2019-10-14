@@ -100,44 +100,86 @@ class Solver():
     #Checks to see if tile is part of a locked ring of 3x3
     def IsRingBlocked(self, pos, prevPos):
 
-        groupOneLeft = [pos, [pos[0], pos[1]-1], [pos[0], pos[1]-2]]
-        groupOneRight = [[pos[0]+2, pos[1]], [pos[0]+2, pos[1]-1], [pos[0]+2, pos[1]-2]]
-        groupOneTop = [pos, [pos[0]+1, pos[1]], [pos[0]+2, pos[1]]]
-        groupOneBottom = [pos, [pos[0]+1, pos[1]-2], [pos[0]+2, pos[1]-2]]
-        groupBottomRight = [groupOneLeft, groupOneRight, groupOneTop, groupOneBottom]
+        #groupOneLeft = [pos, [pos[0], pos[1]-1], [pos[0], pos[1]-2]]
+        #groupOneRight = [[pos[0]+2, pos[1]], [pos[0]+2, pos[1]-1], [pos[0]+2, pos[1]-2]]
+        #groupOneTop = [pos, [pos[0]+1, pos[1]], [pos[0]+2, pos[1]]]
+        #groupOneBottom = [pos, [pos[0]+1, pos[1]-2], [pos[0]+2, pos[1]-2]]
+        #groupBottomRight = [groupOneLeft, groupOneRight, groupOneTop, groupOneBottom]
 
-        groupTwoRight = [pos, [pos[0], pos[1]-1], [pos[0], pos[1]-2]]
-        groupTwoLeft = [[pos[0]-2, pos[1]], [pos[0]-2, pos[1]-1], [pos[0]-2, pos[1]-2]]
-        groupTwoTop = [pos, [pos[0]-1, pos[1]], [pos[0]-2, pos[1]]]
-        groupTwoBottom = [pos, [pos[0]-1, pos[1]-2], [pos[0]-2, pos[1]-2]]
-        groupBottomLeft = [groupTwoLeft, groupTwoRight, groupTwoTop, groupTwoBottom]
+        #groupTwoRight = [pos, [pos[0], pos[1]-1], [pos[0], pos[1]-2]]
+        #groupTwoLeft = [[pos[0]-2, pos[1]], [pos[0]-2, pos[1]-1], [pos[0]-2, pos[1]-2]]
+        #groupTwoTop = [pos, [pos[0]-1, pos[1]], [pos[0]-2, pos[1]]]
+        #groupTwoBottom = [pos, [pos[0]-1, pos[1]-2], [pos[0]-2, pos[1]-2]]
+        #groupBottomLeft = [groupTwoLeft, groupTwoRight, groupTwoTop, groupTwoBottom]
 
-        groupThreeLeft = [pos, [pos[0], pos[1]+1], [pos[0], pos[1]+2]]
-        groupThreeRight = [[pos[0]+2, pos[1]], [pos[0]+2, pos[1]+1], [pos[0]+2, pos[1]+2]]
-        groupThreeBottom = [pos, [pos[0]+1, pos[1]], [pos[0]+2, pos[1]]]
-        groupThreeTop = [pos, [pos[0]+1, pos[1]+2], [pos[0]+2, pos[1]+2]]
-        groupTopRight = [groupThreeLeft, groupThreeRight, groupThreeTop, groupThreeBottom]
+        #groupThreeLeft = [pos, [pos[0], pos[1]+1], [pos[0], pos[1]+2]]
+        #groupThreeRight = [[pos[0]+2, pos[1]], [pos[0]+2, pos[1]+1], [pos[0]+2, pos[1]+2]]
+        #groupThreeBottom = [pos, [pos[0]+1, pos[1]], [pos[0]+2, pos[1]]]
+        #groupThreeTop = [pos, [pos[0]+1, pos[1]+2], [pos[0]+2, pos[1]+2]]
+        #groupTopRight = [groupThreeLeft, groupThreeRight, groupThreeTop, groupThreeBottom]
 
-        groupFourLeft = [[pos[0]-2, pos[1]], [pos[0]-2, pos[1]+1], [pos[0], pos[1]+2]]
-        groupFourRight = [pos, [pos[0], pos[1]+1], [pos[0], pos[1]+2]]
-        groupFourBottom = [pos, [pos[0]-1, pos[1]], [pos[0]-2, pos[1]]]
-        groupFourTop = [pos, [pos[0]-1, pos[1]+2], [pos[0]-2, pos[1]+2]]
-        groupTopLeft = [groupFourLeft, groupFourRight, groupFourTop, groupFourBottom]
+        #groupFourLeft = [[pos[0]-2, pos[1]], [pos[0]-2, pos[1]+1], [pos[0], pos[1]+2]]
+        #groupFourRight = [pos, [pos[0], pos[1]+1], [pos[0], pos[1]+2]]
+        #groupFourBottom = [pos, [pos[0]-1, pos[1]], [pos[0]-2, pos[1]]]
+        #groupFourTop = [pos, [pos[0]-1, pos[1]+2], [pos[0]-2, pos[1]+2]]
+        #groupTopLeft = [groupFourLeft, groupFourRight, groupFourTop, groupFourBottom]
 
-        groups = [groupTopLeft, groupTopRight, groupBottomLeft, groupBottomRight]
+        #groups = [groupTopLeft, groupTopRight, groupBottomLeft, groupBottomRight]
+        #tempLevelArray = [x[:] for x in self.levelArray[:]]
+        #tempLevelArray[pos[0]][pos[1]] = 2
+        #tempLevelArray[prevPos[0]][prevPos[1]] = 1
+        #blockCounter = 0
+        #for group in groups:
+        #    for side in group:
+        #        for pos in side:
+        #            if self.CheckRange(pos) and (tempLevelArray[pos[0]][pos[1]] == 2 or tempLevelArray[pos[0]][pos[1]] == 0):
+        #                blockCounter += 1
+        #    if blockCounter == 8:
+        #        return True
+        #    blockCounter = 0
+
+
+
+
+        #tempLevelArray = [x[:] for x in self.levelArray[:]]
+        #tempLevelArray[pos[0]][pos[1]] = 2
+        #tempLevelArray[prevPos[0]][prevPos[1]] = 1
+        #turnMultipliers = [[1,1,-1,-1], [1,-1,-1,1], [-1,1,1,-1], [-1,-1,1,1]]
+        #for set in turnMultipliers:
+        #    for mul in set:
+        #        blockCounter = 0
+        #        for side in range(1,4):
+        #            vectorDir = side * mul
+        #            checkPos = [pos[0]+vectorDir, pos[1]]
+        #            posGood = self.CheckRange(checkPos)
+        #            checkVal = 0
+        #            if posGood and side % 2:
+        #                checkVal = tempLevelArray[checkPos[0]][checkPos[1]]
+        #            elif posGood:
+        #                checkVal = tempLevelArray[checkPos[0]][checkPos[1]]
+        #            if checkVal == 0 or checkVal == 2:
+        #                blockCounter += 1
+        #        if blockCounter == 7:
+        #            return True
+        #return False
+
         tempLevelArray = [x[:] for x in self.levelArray[:]]
         tempLevelArray[pos[0]][pos[1]] = 2
         tempLevelArray[prevPos[0]][prevPos[1]] = 1
-        blockCounter = 0
-        for group in groups:
-            for side in group:
-                for pos in side:
-                    if self.CheckRange(pos) and (tempLevelArray[pos[0]][pos[1]] == 2 or tempLevelArray[pos[0]][pos[1]] == 0):
-                        blockCounter += 1
-            if blockCounter == 8:
-                return True
-            blockCounter = 0
+        dirMultipliers = [[1,1],[1,-1],[-1,1],[-1,-1]]
+        for dir in dirMultipliers:
+                blockCounter = 0
+                for y in range(3):
+                    for x in range(3):
+                        vecPos = [pos[0]+dir[0]*x, pos[1]+dir[1]*y]
+                        if self.CheckRange(vecPos) and (x != 1 and y != 1):
+                            val = tempLevelArray[vecPos[0]][vecPos[1]]
+                            if val == 0 or val == 2:
+                                blockCounter += 1
+                if blockCounter == 8:
+                    return True
         return False
+
 
     #sees if a tile is part of a locked group of four
     def IsBlockLocked(self, pos, prevPos):
