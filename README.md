@@ -18,17 +18,17 @@ For those without Python, there is an installer that will be available shortly. 
 Using Venv: https://docs.python.org/3/tutorial/venv.html
 
 Required Packages:
-*Kivy version 1.11.1
-*docutils
-*pygments
-*pypiwin32
-*kivy_deps.sdl2 version 0.1.22
-*kivy_deps.glew version 0.1.12
-*kivy_deps.gstreamer version 0.1.17
-*Python Image Library (PIL)
+* Kivy version 1.11.1
+* docutils
+* pygments
+* pypiwin32
+* kivy_deps.sdl2 version 0.1.22
+* kivy_deps.glew version 0.1.12
+* kivy_deps.gstreamer version 0.1.17
+* Python Image Library (PIL)
 
 Pip Commands for Best Results:
-*pip install docutils pygments pypiwin32 kivy_deps.sdl2==0.1.22 kivy_deps.glew==0.1.12
-*pip install kivy_deps.gstreamer==0.1.17
-*pip install kivy==1.11.1
-*pyp install pil
+* pip install docutils pygments pypiwin32 kivy_deps.sdl2==0.1.22 kivy_deps.glew==0.1.12
+* pip install kivy_deps.gstreamer==0.1.17
+* pip install kivy==1.11.1
+* pyp install pil
