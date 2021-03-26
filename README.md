@@ -12,9 +12,6 @@ There are two versions available, one for those with Python and one for those wi
 # Running with Python
 For those with Python, download the most recent version of the app as a folder from "version" on this GitHub page. Then, there are a series of packages you must install. It is highly reccomended to use a virtual environment such as Venv for the packages. I have also included the series of pip commands I used to install the packages in a Venv virtual environment. I know for sure that these commands install the correct package versions.
 
-# Running without Python
-For those without Python, there is an installer that will be available shortly. This is avaiable
-
 Using Venv: https://docs.python.org/3/tutorial/venv.html
 
 Required Packages:
